@@ -1,0 +1,34 @@
+body {
+    background: black;
+    color: white;
+    font-family: Arial;
+}
+
+.scoreboard {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 80vh;
+}
+
+.team img {
+    height: 150px;
+}
+
+.team div {
+    text-align: center;
+}
+
+#timer {
+    font-size: 80px;
+}
+
+#extra {
+    font-size: 30px;
+}
+
+#sponsor {
+    width: 200px;
+    display: block;
+    margin: auto;
+}

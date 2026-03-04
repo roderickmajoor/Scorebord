@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scorebord</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-rows: 1fr 2fr 0.7fr;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .timer {
+            font-size: 90px;
+        }
+
+        .extra-time {
+            font-size: 45px;
+            opacity: 0.7;
+            display: none;
+        }
+
+        .scoreboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+        }
+
+        .team-name {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .team img {
+            width: 220px;
+            height: 220px;
+            object-fit: contain;
+        }
+
+        .score {
+            font-size: 140px;
+            font-weight: bold;
+            letter-spacing: 20px;
+        }
+
+        .sponsor {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sponsor img {
+            width: 250px;
+            height: 200px;
+            object-fit: contain;
+            background: white;       /* 👈 zichtbaar op zwart */
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* 🔥 Goal flash effect */
+        .flash {
+            animation: flashAnim 0.5s ease-in-out 3;
+        }
+
+        @keyframes flashAnim {
+            0% { background: white; color: black; }
+            100% { background: black; color: white; }
+        }
+    </style>
+</head>
+
+<body>
+<div id="main" class="container">
+
+    <div>
+        <div class="timer" id="timer">00:00</div>
+        <div class="extra-time" id="extra">+0</div>
+    </div>
+
+    <div class="scoreboard">
+        <div class="team">
+            <div class="team-name" id="homeName">SV Laren '99</div>
+            <img id="homeLogo" src="{{ homeLogo }}">
+        </div>
+
+        <div class="score" id="score">0 - 0</div>
+
+        <div class="team">
+            <div class="team-name" id="awayName">Uit</div>
+            <img id="awayLogo" src="">
+        </div>
+    </div>
+
+    <div class="sponsor">
+        <img id="sponsorImg" src="">
+    </div>
+
+</div>
+
+<script>
+const socket = io();
+let lastHomeScore = 0;
+
+socket.on("update", data => {
+
+    document.getElementById("homeName").innerText = data.homeName;
+    document.getElementById("awayName").innerText = data.awayName;
+
+    document.getElementById("score").innerText =
+        data.home + " - " + data.away;
+
+    document.getElementById("timer").innerText = data.time;
+
+    const extraEl = document.getElementById("extra");
+
+    if (data.extra > 0) {
+        extraEl.style.display = "block";
+        extraEl.innerText = "+" + data.extra;
+    } else {
+        extraEl.style.display = "none";
+    }
+
+    if (data.homeLogo) {
+        document.getElementById("homeLogo").src = data.homeLogo;
+    }
+
+    if (data.awayLogo) {
+        document.getElementById("awayLogo").src = data.awayLogo;
+    }
+
+    if (data.sponsor) {
+        document.getElementById("sponsorImg").src = data.sponsor;
+    }
+
+    /* 🔥 Flash bij goal thuis */
+    if (data.home > lastHomeScore) {
+        const el = document.getElementById("main");
+        el.classList.add("flash");
+
+        setTimeout(() => el.classList.remove("flash"), 1500);
+    }
+
+    lastHomeScore = data.home;
+});
+</script>
+
+</body>
+</html>

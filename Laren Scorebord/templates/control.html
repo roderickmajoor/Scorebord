@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            padding: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 20px;
+            margin: 10px 0;
+            font-size: 20px;
+            border-radius: 10px;
+            border: none;
+            background: black;
+            color: white;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Uitteam</h2>
+<input placeholder="Uit team" oninput="awayName=this.value; send()">
+
+<h2>Score</h2>
+<button onclick="home++; send()">+1 Thuis</button>
+<button onclick="away++; send()">+1 Uit</button>
+
+<h2>Timer</h2>
+<button onclick="startFirst()">Start 1e helft</button>
+<button onclick="rust()">Rust</button>
+<button onclick="startSecond()">Start 2e helft</button>
+<button onclick="stop()">Stop</button>
+
+<h2>Wedstrijd</h2>
+<button onclick="resetMatch()">Reset</button>
+
+<h2>Logo uitteam</h2>
+<input type="file" onchange="upload(event, 'away')">
+
+<h2>Sponsor</h2>
+<input type="file" onchange="upload(event, 'sponsor')">
+
+<script>
+const socket = io({
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000
+});
+
+socket.on("update", data => {
+    // Sync all variables with server state
+    home = data.home;
+    away = data.away;
+
+    homeName = data.homeName;
+    awayName = data.awayName;
+
+    homeLogo = data.homeLogo;
+    awayLogo = data.awayLogo;
+    sponsor = data.sponsor;
+
+    currentTime = data.time;
+    currentExtra = data.extra;
+});
+
+let home = 0;
+let away = 0;
+let homeName = "SV Laren '99";
+let awayName = "Tegenstander";
+
+let homeLogo = "";
+let awayLogo = "";
+let sponsor = "";
+
+let currentTime = "00:00";
+let currentExtra = 0;
+
+function send(extra = currentExtra, time = currentTime) {
+    currentTime = time;
+    currentExtra = extra;
+
+    socket.emit("update", {
+        home, away,
+        time: currentTime,
+        extra: currentExtra,
+        homeLogo, awayLogo,
+        homeName, awayName,
+        sponsor
+    });
+}
+
+function resetMatch() {
+    home = 0;
+    away = 0;
+    send(0, "00:00");
+}
+
+function upload(event, type) {
+    const reader = new FileReader();
+
+    reader.onload = function() {
+        if (type === "home") homeLogo = reader.result;
+        if (type === "away") awayLogo = reader.result;
+        if (type === "sponsor") sponsor = reader.result;
+        send();
+    };
+
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+function startFirst() {
+    socket.emit("start_first");
+}
+
+function startSecond() {
+    socket.emit("start_second");
+}
+
+function stop() {
+    socket.emit("stop_timer");
+}
+
+function rust() {
+    socket.emit("rust");
+}
+</script>
+
+</body>
+</html>
