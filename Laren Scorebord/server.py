@@ -27,23 +27,34 @@ def timer_loop():
         if state["running"]:
             state["seconds"] += 1
 
-            sec = state["seconds"]
-            min_ = sec // 60
-            sec_ = sec % 60
+            total_sec = state["seconds"]
 
-            extra = 0
-            display_min = min_
+            # BASIS TIJD
+            if state["half"] == 1:
+                base_limit = 45 * 60
+            else:
+                base_limit = 90 * 60
 
-            if state["half"] == 1 and min_ >= 45:
-                display_min = 45
-                extra = min_ - 45
+            if total_sec <= base_limit:
+                # Normale tijd
+                min_ = total_sec // 60
+                sec_ = total_sec % 60
 
-            if state["half"] == 2 and min_ >= 90:
-                display_min = 90
-                extra = min_ - 90
+                state["time"] = f"{min_:02}:{sec_:02}"
+                state["extra"] = 0
 
-            state["time"] = f"{display_min:02}:{sec_:02}"
-            state["extra"] = extra
+            else:
+                # EXTRA TIJD
+                extra_sec = total_sec - base_limit
+
+                base_min = base_limit // 60
+                state["time"] = f"{base_min:02}:00"
+
+                extra_min = extra_sec // 60
+                extra_s = extra_sec % 60
+
+                # 👉 NU echte klok i.p.v. alleen +1
+                state["extra"] = f"{extra_min:02}:{extra_s:02}"
 
             socketio.emit("update", state)
 
