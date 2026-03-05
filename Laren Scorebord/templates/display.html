@@ -124,7 +124,7 @@ socket.on("update", data => {
 
     const extraEl = document.getElementById("extra");
 
-    if (data.extra > 0) {
+    if (data.extra && data.extra !== "00:00") {
         extraEl.style.display = "block";
         extraEl.innerText = "+" + data.extra;
     } else {
