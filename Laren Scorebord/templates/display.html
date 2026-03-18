@@ -53,10 +53,32 @@
             letter-spacing: 20px;
         }
 
-        .sponsor {
+        .bottomRow {
+            position: relative;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: space-between;
+            align-items: flex-start; /* scrollers kunnen naar beneden overlappen */
+            padding: 10px 20px;
+            height: 200px; /* vast hoogte zodat de sponsor div niet verschuift */
+        }
+
+        .scorers {
+            position: absolute; /* overlay positie */
+            top: 0; /* start bovenaan de bottomRow */
+            left: 8%; /* links uitlijnen met de home column */
+            width: 220px; /* zelfde breedte als het logo */
+            color: white;
+            font-size: 30px;
+            text-align: left;
+            overflow: visible; /* mag overlopen naar onder */
+            z-index: 1;
+        }
+
+        .sponsor {
+            position: relative; /* zodat scorers niet over de sponsor valt */
+            z-index: 0;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .sponsor img {
@@ -81,38 +103,79 @@
 </head>
 
 <body>
-<div id="main" class="container">
+<div id="displayScreen">
+    <div id="main" class="container">
 
-    <div>
-        <div class="timer" id="timer">00:00</div>
-        <div class="extra-time" id="extra">+0</div>
-    </div>
-
-    <div class="scoreboard">
-        <div class="team">
-            <div class="team-name" id="homeName">SV Laren '99</div>
-            <img id="homeLogo" src="{{ homeLogo }}">
+        <div class="timerBlock">
+            <div class="timer" id="timer">00:00</div>
+            <div class="extra-time" id="extra">+0</div>
         </div>
 
-        <div class="score" id="score">0 - 0</div>
+        <div class="scoreboard">
+            <div class="team">
+                <div class="team-name" id="homeName">SV Laren '99</div>
+                <img id="homeLogo" src="">
+            </div>
 
-        <div class="team">
-            <div class="team-name" id="awayName">Uit</div>
-            <img id="awayLogo" src="">
+            <div class="score" id="score">0 - 0</div>
+
+            <div class="team">
+                <div class="team-name" id="awayName">Uit</div>
+                <img id="awayLogo" src="">
+            </div>
         </div>
-    </div>
 
-    <div class="sponsor">
-        <img id="sponsorImg" src="">
-    </div>
+        <!-- ⭐ NIEUW -->
+        <div class="bottomRow">
 
+            <div id="scorers" class="scorers"></div>
+
+            <div class="sponsor">
+                <img id="sponsorImg" src="">
+            </div>
+
+        </div>
+
+    </div>
 </div>
+
+<iframe id="lineupFrame"
+        src="/lineup"
+        style="position:absolute;left:0;width:100%;height:100%;border:0;display:none;overflow: hidden;box-sizing: border-box;">
+</iframe>
 
 <script>
 const socket = io();
 let lastHomeScore = 0;
 
 socket.on("update", data => {
+
+    const scorers = document.getElementById("scorers");
+    scorers.innerHTML = "";
+
+    let map = {};
+
+    data.goals.forEach(g => {
+
+        if(!map[g.player]) map[g.player] = [];
+
+        map[g.player].push(g.minute);
+    });
+
+    Object.keys(map).forEach(name => {
+
+        let mins = map[name].join("' ") + "'";
+
+        scorers.innerHTML += `<div>${mins} ${name}</div>`;
+    });
+
+    if(data.screen === "lineup"){
+        document.getElementById("displayScreen").style.display = "none";
+        document.getElementById("lineupFrame").style.display = "block";
+    }else{
+        document.getElementById("displayScreen").style.display = "block";
+        document.getElementById("lineupFrame").style.display = "none";
+    }
 
     document.getElementById("homeName").innerText = data.homeName;
     document.getElementById("awayName").innerText = data.awayName;

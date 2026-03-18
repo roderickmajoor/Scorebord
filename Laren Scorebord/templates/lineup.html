@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Opstelling</title>
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+<style>
+body{
+    background: #3E8B3B;
+    color:white;
+    font-family: Arial;
+    overflow: hidden;
+}
+
+.field{
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+
+    /* Achtergrond plaatje */
+    background-image: url('/static/field-lq.png'); /* pad naar jouw afbeelding */
+    background-size: 70% 100%;       /* vul het hele veld */
+    background-position: center;  /* centreren */
+    background-repeat: no-repeat; /* niet herhalen */
+}
+
+.player{
+    position: absolute;
+    transform: translate(-50%, -50%);
+    text-align: center;
+
+    width: 60px;   
+    height: 80px;  
+    background-image: url('/static/shirt.png'); /* zwart/wit shirt */
+    background-size: cover;   
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;   /* nummer bovenaan shirt */
+    align-items: center;      
+    color: white;             /* standaard kleur voor nummer */
+    font-weight: bold;
+    padding-top: 25px;        /* ruimte boven nummer */
+}
+
+.nr{
+    font-size: 24px;
+    color: white;             /* wit nummer, altijd zichtbaar op zwart/wit shirt */
+    text-shadow: 2px 2px 4px black; /* optioneel, meer contrast */
+}
+
+.name{
+    font-size: 18px;
+    margin-top: 50px;         /* duwt de naam onder het shirt */
+    color: white;             /* naam ook wit of kies een andere kleur */
+    text-shadow: 0px 0px 2px black; /* optioneel, beter leesbaar */
+}
+
+.player.keeper {
+    background-image: url('/static/shirt.png');
+    background-size: cover;
+    background-position: center;
+    color: blue; /* adds a base color */
+    background-blend-mode: multiply; /* blends blue into shirt */
+}
+
+/* Container voor wissels links */
+.subs-container {
+    position: absolute;
+    left: 10px;   /* afstand vanaf linkerzijde */
+    top: 50px;    /* start onder top */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;    /* ruimte tussen subs */
+    width: 150px; /* optioneel, breedte container */
+}
+
+.sub {
+    text-align: left;
+    font-size: 20px;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="field" id="field"></div>
+<div class="subs-container" id="subsContainer"></div>
+
+<script>
+const socket = io();
+
+socket.on("update", data => {
+
+    const f = document.getElementById("field");
+    f.innerHTML = "";
+
+    const positions = [
+        [50,85],
+        [25,70],[40,70],[60,70],[75,70],
+        [30,50],[50,55],[70,50],
+        [25,25],[75,25],
+        [50,15]
+    ];
+
+    // Render starters
+    data.lineup.forEach((p,i)=>{
+        const d = document.createElement("div");
+        d.className = "player";
+        d.style.left = positions[i][0]+"%";
+        d.style.top = positions[i][1]+"%";
+        d.innerHTML = `<div class="nr">${p.nr}</div><div class="name">${p.name}</div>`;
+        // ✅ Apply special keeper class for the first player
+        if(i === 0){ // first player = keeper
+            d.classList.add('keeper');
+        }
+        f.appendChild(d);
+    });
+
+    // Render subs
+    const subsContainer = document.getElementById("subsContainer");
+    subsContainer.innerHTML = ""; // clear previous
+    data.subs.forEach(sub => {
+        const s = document.createElement("div");
+        s.className = "sub";
+        s.innerText = `${sub.nr} ${sub.name}`;
+        subsContainer.appendChild(s);
+    });
+});
+</script>
+
+</body>
+</html>

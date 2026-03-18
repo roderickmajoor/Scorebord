@@ -17,7 +17,11 @@ state = {
     "sponsor": "",
     "running": False,
     "seconds": 0,
-    "half": 1
+    "half": 1,
+    "lineup": [],          # basis 11
+    "subs": [],            # wissels
+    "goals": [],
+    "screen": "display"
 }
 
 def timer_loop():
@@ -91,6 +95,10 @@ def display():
 def control():
     return render_template("control.html")
 
+@app.route("/lineup")
+def lineup():
+    return render_template("lineup.html")
+
 @socketio.on("connect")
 def on_connect():
     emit("update", state)  # 👈 bij verbinden direct huidige stand sturen
@@ -98,6 +106,69 @@ def on_connect():
 @socketio.on("update")
 def update(data):
     state.update(data)
+    emit("update", state, broadcast=True)
+
+@socketio.on("goal_home")
+def goal_home(data):
+
+    player = data["player"]
+
+    total_sec = state["seconds"]
+
+    # bepaal basislimiet
+    if state["half"] == 1:
+        base_limit = 45 * 60
+        base_min = 45
+    else:
+        base_limit = 90 * 60
+        base_min = 90
+
+    # ⭐ minuut bepalen
+    if total_sec >= base_limit:
+        minute = base_min              # blessuretijd -> 45 of 90
+    else:
+        minute = (total_sec // 60) + 1 # normale afronding
+
+    state["home"] += 1
+
+    state["goals"].append({
+        "player": player,
+        "minute": minute
+    })
+
+    emit("update", state, broadcast=True)
+
+@socketio.on("reset_match")
+def reset_match():
+
+    state["home"] = 0
+    state["away"] = 0
+
+    state["seconds"] = 0
+    state["time"] = "00:00"
+    state["extra"] = 0
+    state["half"] = 1
+    state["running"] = False
+
+    state["goals"] = []   # ⭐ BELANGRIJK
+
+    emit("update", state, broadcast=True)
+
+@socketio.on("save_lineup")
+def save_lineup(data):
+    state["lineup"] = data["lineup"]
+    state["subs"] = data["subs"]
+
+    emit("update", state, broadcast=True)
+
+@socketio.on("show_lineup")
+def show_lineup():
+    state["screen"] = "lineup"
+    emit("update", state, broadcast=True)
+
+@socketio.on("show_display")
+def show_display():
+    state["screen"] = "display"
     emit("update", state, broadcast=True)
 
 if __name__ == "__main__":

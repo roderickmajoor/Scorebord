@@ -40,6 +40,10 @@
 <button onclick="home++; send()">+1 Thuis</button>
 <button onclick="away++; send()">+1 Uit</button>
 
+<h2>Thuisgoal</h2>
+<select id="scorer"></select>
+<button onclick="goalHome()">Goal Laren</button>
+
 <h2>Timer</h2>
 <button onclick="startFirst()">Start 1e helft</button>
 <button onclick="rust()">Rust</button>
@@ -54,6 +58,19 @@
 
 <h2>Sponsor</h2>
 <input type="file" onchange="upload(event, 'sponsor')">
+
+<h2>Opstelling</h2>
+
+<div id="lineupInputs"></div>
+
+<h2>Wissels</h2>
+<div id="subInputs"></div>
+
+<button onclick="saveLineup()">Opslaan opstelling</button>
+
+<h2>Scherm</h2>
+<button onclick="showDisplay()">Scorebord</button>
+<button onclick="showLineup()">Opstelling</button>
 
 <script>
 const socket = io({
@@ -76,6 +93,35 @@ socket.on("update", data => {
 
     currentTime = data.time;
     currentExtra = data.extra;
+
+    const sel = document.getElementById("scorer");
+
+    let current = sel.value;   // 👈 onthoud keuze
+
+    sel.innerHTML = "";
+
+    data.lineup.forEach(p => {
+
+        const opt = document.createElement("option");
+
+        opt.value = p.name;
+        opt.text = p.nr + " " + p.name;
+
+        if(p.name === current){
+            opt.selected = true;
+        }
+
+        sel.appendChild(opt);
+    });
+
+    // Voeg subs toe
+    data.subs.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.name;
+        opt.text = p.nr + " " + p.name + " (sub)";
+        if(p.name === current) opt.selected = true;
+        sel.appendChild(opt);
+    });
 });
 
 let home = 0;
@@ -89,6 +135,58 @@ let sponsor = "";
 
 let currentTime = "00:00";
 let currentExtra = 0;
+
+let lineup = [];
+let subs = [];
+
+function makeInputs() {
+
+    const l = document.getElementById("lineupInputs");
+    const s = document.getElementById("subInputs");
+
+    for (let i=0;i<11;i++) {
+        l.innerHTML += `
+            <input placeholder="Nr" id="nr${i}">
+            <input placeholder="Naam" id="name${i}">
+        `;
+    }
+
+    for (let i=0;i<5;i++) {
+        s.innerHTML += `
+            <input placeholder="Nr" id="subnr${i}">
+            <input placeholder="Naam" id="subname${i}">
+        `;
+    }
+}
+
+makeInputs();
+
+function saveLineup(){
+
+    lineup = [];
+    subs = [];
+
+    for (let i=0;i<11;i++){
+        lineup.push({
+            nr: document.getElementById("nr"+i).value,
+            name: document.getElementById("name"+i).value
+        });
+    }
+
+    for (let i=0;i<5;i++){
+        subs.push({
+            nr: document.getElementById("subnr"+i).value,
+            name: document.getElementById("subname"+i).value
+        });
+    }
+
+    socket.emit("save_lineup", { lineup, subs });
+}
+
+function goalHome(){
+    const player = document.getElementById("scorer").value;
+    socket.emit("goal_home", { player });
+}
 
 function send(extra = currentExtra, time = currentTime) {
     currentTime = time;
@@ -104,10 +202,16 @@ function send(extra = currentExtra, time = currentTime) {
     });
 }
 
-function resetMatch() {
-    home = 0;
-    away = 0;
-    send(0, "00:00");
+function showLineup(){
+    socket.emit("show_lineup");
+}
+
+function showDisplay(){
+    socket.emit("show_display");
+}
+
+function resetMatch(){
+    socket.emit("reset_match");
 }
 
 function upload(event, type) {
