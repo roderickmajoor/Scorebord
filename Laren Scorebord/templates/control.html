@@ -144,10 +144,15 @@ function makeInputs() {
     const l = document.getElementById("lineupInputs");
     const s = document.getElementById("subInputs");
 
+    const positions = ["K","LB","CV","CV","RB","CM","CVM","CM","LB","RB","SP"];
+
     for (let i=0;i<11;i++) {
         l.innerHTML += `
-            <input placeholder="Nr" id="nr${i}">
-            <input placeholder="Naam" id="name${i}">
+            <div style="margin-bottom:10px;">
+                <strong>${positions[i]}</strong><br>
+                <input placeholder="Nr" id="nr${i}">
+                <input placeholder="Naam" id="name${i}">
+            </div>
         `;
     }
 
