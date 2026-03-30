@@ -78,6 +78,10 @@ def start_second():
 def stop_timer():
     state["running"] = False
 
+@socketio.on("start_timer")
+def stop_timer():
+    state["running"] = True
+
 @socketio.on("rust")
 def rust():
     state["running"] = False
@@ -169,6 +173,25 @@ def show_lineup():
 @socketio.on("show_display")
 def show_display():
     state["screen"] = "display"
+    emit("update", state, broadcast=True)
+
+@socketio.on("undo_goal_home")
+def undo_goal_home():
+
+    if len(state["goals"]) > 0:
+        state["goals"].pop()   # laatste goal verwijderen
+
+    if state["home"] > 0:
+        state["home"] -= 1
+
+    emit("update", state, broadcast=True)
+
+@socketio.on("undo_goal_away")
+def undo_goal_away():
+
+    if state["away"] > 0:
+        state["away"] -= 1
+
     emit("update", state, broadcast=True)
 
 if __name__ == "__main__":

@@ -33,12 +33,16 @@
 
 <body>
 
-<h2>Uitteam</h2>
-<input placeholder="Uit team" oninput="awayName=this.value; send()">
-
 <h2>Score</h2>
-<button onclick="home++; send()">+1 Thuis</button>
-<button onclick="away++; send()">+1 Uit</button>
+<div style="display:flex; gap:10px;">
+    <button onclick="home++; send()">+1 Thuis</button>
+    <button onclick="undoGoalHome()">-1 Thuis</button>
+</div>
+
+<div style="display:flex; gap:10px;">
+    <button onclick="away++; send()">+1 Uit</button>
+    <button onclick="undoGoalAway()">-1 Uit</button>
+</div>
 
 <h2>Thuisgoal</h2>
 <select id="scorer"></select>
@@ -49,9 +53,13 @@
 <button onclick="rust()">Rust</button>
 <button onclick="startSecond()">Start 2e helft</button>
 <button onclick="stop()">Stop</button>
+<button onclick="start()">Start</button>
 
 <h2>Wedstrijd</h2>
 <button onclick="resetMatch()">Reset</button>
+
+<h2>Uitteam</h2>
+<input placeholder="Uit team" oninput="awayName=this.value; send()">
 
 <h2>Logo uitteam</h2>
 <input type="file" onchange="upload(event, 'away')">
@@ -193,6 +201,14 @@ function goalHome(){
     socket.emit("goal_home", { player });
 }
 
+function undoGoalHome(){
+    socket.emit("undo_goal_home");
+}
+
+function undoGoalAway(){
+    socket.emit("undo_goal_away");
+}
+
 function send(extra = currentExtra, time = currentTime) {
     currentTime = time;
     currentExtra = extra;
@@ -242,6 +258,10 @@ function startSecond() {
 
 function stop() {
     socket.emit("stop_timer");
+}
+
+function start() {
+    socket.emit("start_timer");
 }
 
 function rust() {
