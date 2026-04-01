@@ -99,10 +99,85 @@
             0% { background: white; color: black; }
             100% { background: black; color: white; }
         }
+
+        /* Broadcast GOAL overlay */
+        .goal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 9999;
+        }
+
+        .goal-text {
+            font-size: 240px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 
+                0 0 20px rgba(255,255,255,0.8),
+                0 0 40px rgba(255,255,255,0.6);
+            transform: scale(0.5);
+        }
+
+        /* Show animation */
+        .goal-show {
+            animation: goalFade 1.5s ease-out forwards;
+        }
+
+        .goal-show .goal-text {
+            animation: goalPop 1.5s ease-out forwards;
+        }
+
+        /* Pop animation */
+        @keyframes goalPop {
+            0% {
+                transform: scale(0.3);
+            }
+            40% {
+                transform: scale(1.2);
+            }
+            60% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Fade animation */
+        @keyframes goalFade {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Slight broadcast shake */
+        .flash {
+            animation: flashAnim 0.5s ease-in-out 3, shake 0.5s ease-in-out 2;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(5px, 0); }
+            50% { transform: translate(-5px, 0); }
+            75% { transform: translate(5px, 0); }
+            100% { transform: translate(0,0); }
+        }
     </style>
 </head>
 
 <body>
+<div id="goalOverlay" class="goal-overlay">
+    <div class="goal-text">GOAL</div>
+</div>
+
 <div id="displayScreen">
     <div id="main" class="container">
 
@@ -207,11 +282,18 @@ socket.on("update", data => {
     }
 
     /* 🔥 Flash bij goal thuis */
+    /* 🔥 Broadcast style goal animation */
     if (data.home > lastHomeScore) {
         const el = document.getElementById("main");
-        el.classList.add("flash");
+        const goal = document.getElementById("goalOverlay");
 
-        setTimeout(() => el.classList.remove("flash"), 1500);
+        el.classList.add("flash");
+        goal.classList.add("goal-show");
+
+        setTimeout(() => {
+            el.classList.remove("flash");
+            goal.classList.remove("goal-show");
+        }, 1500);
     }
 
     lastHomeScore = data.home;
