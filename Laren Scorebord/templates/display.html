@@ -127,11 +127,11 @@
 
         /* Show animation */
         .goal-show {
-            animation: goalFade 1.5s ease-out forwards;
+            animation: goalFade 5s ease-out forwards;
         }
 
         .goal-show .goal-text {
-            animation: goalPop 1.5s ease-out forwards;
+            animation: goalPop 5s ease-out forwards;
         }
 
         /* Pop animation */
@@ -160,7 +160,7 @@
 
         /* Slight broadcast shake */
         .flash {
-            animation: flashAnim 0.5s ease-in-out 3, shake 0.5s ease-in-out 2;
+            animation: flashAnim 0.5s ease-in-out 10, shake 0.5s ease-in-out 9;
         }
 
         @keyframes shake {
@@ -293,7 +293,7 @@ socket.on("update", data => {
         setTimeout(() => {
             el.classList.remove("flash");
             goal.classList.remove("goal-show");
-        }, 1500);
+        }, 5000);
     }
 
     lastHomeScore = data.home;
