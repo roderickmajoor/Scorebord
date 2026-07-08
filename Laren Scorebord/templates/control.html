@@ -82,6 +82,7 @@ Opslaan opstelling
 <h2>Scherm</h2>
 <button onclick="showDisplay()">Scorebord</button>
 <button onclick="showLineup()">Opstelling</button>
+<button onclick="showSponsors()">Sponsors</button>
 
 <script>
 const socket = io({
@@ -305,6 +306,12 @@ function showLineup(){
 
 function showDisplay(){
     socket.emit("show_display");
+}
+
+function showSponsors(){
+
+    socket.emit("show_sponsors");
+
 }
 
 function resetMatch(){

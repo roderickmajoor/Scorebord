@@ -94,14 +94,26 @@ def control():
 def lineup():
     return render_template("lineup.html")
 
+@app.route("/sponsors")
+def sponsors():
 
+    return render_template("sponsors.html")
 
 @socketio.on("connect")
 def connect():
 
     emit("update", state)
 
+@socketio.on("show_sponsors")
+def show_sponsors():
 
+    state["screen"] = "sponsors"
+
+    emit(
+        "update",
+        state,
+        broadcast=True
+    )
 
 @socketio.on("get_players")
 def get_players():
