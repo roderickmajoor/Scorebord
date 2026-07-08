@@ -1,0 +1,77 @@
+[
+    {
+        "name": "J. Van Hille",
+        "nr": 10,
+        "image": "/static/players/jos_van_hille.png"
+    },
+    {
+        "name": "T. Kavcic",
+        "nr": 67,
+        "image": "/static/players/thom_kavcic.jpg"
+    },
+    {
+        "name": "A. Laghrib",
+        "nr": 19,
+        "image": "/static/players/ayoub_laghrib.jpg"
+    },
+    {
+        "name": "D. Van Hooff",
+        "nr": 7,
+        "image": "/static/players/daan_van_hooff.jpg"
+    },
+    {
+        "name": "D. Van Leeuwen",
+        "nr": 20,
+        "image": "/static/players/duncan_van_leeuwen.jpg"
+    },
+    {
+        "name": "H. Yildiz",
+        "nr": 4,
+        "image": "/static/players/hilmican_yildiz.jpg"
+    },
+    {
+        "name": "J. Roest",
+        "nr": 13,
+        "image": "/static/players/jeffrey_roest.jpg"
+    },
+    {
+        "name": "J. Karssen",
+        "nr": 9,
+        "image": "/static/players/jordi_karssen.jpg"
+    },
+    {
+        "name": "J. Wesselink",
+        "nr": 2,
+        "image": "/static/players/jurriaan_wesselink.jpg"
+    },
+    {
+        "name": "L. Stoelhorst",
+        "nr": 16,
+        "image": "/static/players/lars_stoelhorst.jpg"
+    },
+    {
+        "name": "M. Abdelkhalki",
+        "nr": 11,
+        "image": "/static/players/mohamed_abdelkhalki.jpg"
+    },
+    {
+        "name": "N. Resing",
+        "nr": 1,
+        "image": "/static/players/niels_resing.jpg"
+    },
+    {
+        "name": "R. Majoor",
+        "nr": 3,
+        "image": "/static/players/roderick_majoor.jpg"
+    },
+    {
+        "name": "T. Nuhovic",
+        "nr": 17,
+        "image": "/static/players/tahir_nuhovic.jpg"
+    },
+    {
+        "name": "W. Hokmane",
+        "nr": 8,
+        "image": "/static/players/waleed_hokmane.jpg"
+    }
+]

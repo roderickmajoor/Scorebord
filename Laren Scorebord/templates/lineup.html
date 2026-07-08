@@ -2,143 +2,648 @@
 <html>
 <head>
 <title>Opstelling</title>
+
 <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
 <style>
+
 body{
-    background: #3E8B3B;
+    background:#3E8B3B;
     color:white;
-    font-family: Arial;
-    overflow: hidden;
+    font-family:Arial;
+    overflow:hidden;
 }
+
 
 .field{
-    position: relative;
-    width: 100vw;
-    height: 100vh;
 
-    /* Achtergrond plaatje */
-    background-image: url('/static/field-lq.png'); /* pad naar jouw afbeelding */
-    background-size: 80% 100%;       /* vul het hele veld */
-    background-position: center;  /* centreren */
-    background-repeat: no-repeat; /* niet herhalen */
+    position:relative;
+
+    width:100vw;
+    height:100vh;
+
+    background-image:url('/static/field-lq.png');
+
+    background-size:80% 100%;
+    background-position:center;
+    background-repeat:no-repeat;
+
+    overflow:hidden;
 }
+
+
+
+/* Player photo intro animation */
+
+.intro-player{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:600px;
+    height:600px;
+
+    transform:translate(-50%, -50%);
+
+    background-size:contain;
+    background-repeat:no-repeat;
+    background-position:center;
+
+    z-index:10;
+
+    opacity:1;
+
+    transition:
+        left 1.5s ease-in-out,
+        top 1.5s ease-in-out,
+        width 1.5s ease-in-out,
+        height 1.5s ease-in-out,
+        opacity 0.8s ease-in-out;
+
+}
+
+
+
 
 .player{
-    position: absolute;
-    transform: translate(-50%, -50%);
-    text-align: center;
 
-    width: 65px;   
-    height: 85px;  
-    background-image: url('/static/shirt.png'); /* zwart/wit shirt */
-    background-size: cover;   
-    background-position: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;   /* nummer bovenaan shirt */
-    align-items: center;      
-    color: white;             /* standaard kleur voor nummer */
-    font-weight: bold;
-    padding-top: 25px;        /* ruimte boven nummer */
+    position:absolute;
+
+    transform:translate(-50%, -50%);
+
+    text-align:center;
+
+
+    width:65px;
+
+    height:85px;
+
+
+    background-image:url('/static/shirt.png');
+
+    background-size:cover;
+
+    background-position:center;
+
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:flex-start;
+
+    align-items:center;
+
+
+    font-weight:bold;
+
+
+    padding-top:25px;
+
+
+    opacity:0;
+
+    transition:opacity 0.5s ease;
+
 }
+
+
+
+.player.show{
+
+    opacity:1;
+
+}
+
+
+
 
 .nr{
-    font-size: 30px;
-    color: white;             /* wit nummer, altijd zichtbaar op zwart/wit shirt */
-    -webkit-text-stroke: 2px black;   /* 🔥 outline */
-    
+
+    font-size:30px;
+
+    color:white;
+
+    -webkit-text-stroke:2px black;
+
 }
+
+
+
 
 .name{
-    font-size: 22px;
-    margin-top: 50px;         /* duwt de naam onder het shirt */
-    color: white;             /* naam ook wit of kies een andere kleur */
-    text-shadow: 0px 0px 2px black; /* optioneel, beter leesbaar */
+
+    font-size:22px;
+
+    margin-top:50px;
+
+    color:white;
+
+    text-shadow:
+        0px 0px 2px black;
+
 }
 
-.player.keeper {
-    background-image: url('/static/shirt.png');
-    background-size: cover;
-    background-position: center;
-    color: blue; /* adds a base color */
-    background-blend-mode: multiply; /* blends blue into shirt */
+
+
+
+.player.keeper{
+
+    background-image:url('/static/keepershirt.png');
+
+    background-size:cover;
+
+    background-position:center;
+
+    background-blend-mode:multiply;
+
 }
 
-/* Container voor wissels links */
-.subs-container {
-    position: absolute;
-    left: 10px;   /* afstand vanaf linkerzijde */
-    top: 50px;    /* start onder top */
-    display: flex;
-    flex-direction: column;
-    gap: 10px;    /* ruimte tussen subs */
-    width: 150px; /* optioneel, breedte container */
+
+
+
+.subs-container{
+
+    position:absolute;
+
+    left:10px;
+
+    top:80px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+    width:150px;
+
 }
 
 .sub {
-    text-align: left;
-    font-size: 22px;
-    font-weight: bold;
+    text-align:left;
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+    opacity:0;
+
+    transition:opacity .8s ease;
 }
+
+.sub.show{
+    opacity:1;
+}
+
+.sub img{
+
+    width:45px;
+    height:45px;
+
+    object-fit:cover;
+
+    border-radius:50%;
+}
+
+.sub-intro {
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:200px;
+    height:500px;
+
+    transform:translateY(-50%);
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+
+    border-radius:0;
+
+    border:3px solid white;
+
+    box-shadow:0 0 20px black;
+
+    z-index:20;
+
+    opacity:1;
+
+    transition:
+        left 1.5s ease-in-out,
+        top 1.5s ease-in-out,
+        width 1.5s ease-in-out,
+        height 1.5s ease-in-out,
+        opacity 1s ease-in-out;
+}
+
 </style>
+
 </head>
+
+
 
 <body>
 
+
 <div class="field" id="field"></div>
+
+
 <div class="subs-container" id="subsContainer"></div>
+
+
+
 
 <script>
 const socket = io();
 
-socket.on("update", data => {
 
-    const f = document.getElementById("field");
-    f.innerHTML = "";
+let currentAnimation = 0;
+let lastLineupVersion = -1;
 
-    const positions = [
+
+
+const positions = [
+
     [15,50],   // GK
 
     [30,20],   // LB
-    [30,40],   // LCB
-    [30,60],   // RCB
+    [30,40],   // CV
+    [30,60],   // CV
     [30,80],   // RB
 
-    [55,30],   // LCM
+    [55,30],   // CM
     [45,50],   // CVM
-    [55,70],   // RCM
+    [55,70],   // CM
 
-    [65,20],   // LW
-    [70,50],   // ST
-    [65,80]    // RW
-    ];
+    [70,20],   // LW
+    [75,50],   // SP
+    [70,80]    // RW
 
-    // Render starters
-    data.lineup.forEach((p,i)=>{
-        const d = document.createElement("div");
-        d.className = "player";
-        d.style.left = positions[i][0]+"%";
-        d.style.top = positions[i][1]+"%";
-        d.innerHTML = `<div class="nr">${p.nr}</div><div class="name">${p.name}</div>`;
-        // ✅ Apply special keeper class for the first player
-        if(i === 0){ // first player = keeper
-            d.classList.add('keeper');
+];
+
+
+
+function wait(ms){
+
+    return new Promise(resolve =>
+        setTimeout(resolve, ms)
+    );
+
+}
+
+
+
+
+async function showLineup(data){
+
+
+    // cancel previous animation
+
+    currentAnimation++;
+
+    let myAnimation = currentAnimation;
+
+
+
+    const f=document.getElementById("field");
+
+
+    f.innerHTML="";
+
+
+
+    for(
+        let i=0;
+        i<data.lineup.length;
+        i++
+    ){
+
+
+        // stop if new animation started
+
+        if(myAnimation !== currentAnimation){
+            return;
         }
-        f.appendChild(d);
+
+
+
+        const p=data.lineup[i];
+
+        const pos=positions[i];
+
+
+
+
+        const img=document.createElement("div");
+
+
+        img.className="intro-player";
+
+
+        img.style.backgroundImage =
+            `url('${p.image}')`;
+
+
+
+        f.appendChild(img);
+
+
+
+
+        await wait(1500);
+
+
+
+        if(myAnimation !== currentAnimation){
+            return;
+        }
+
+
+
+
+
+        img.style.left =
+            pos[0]+"%";
+
+
+        img.style.top =
+            pos[1]+"%";
+
+
+
+        img.style.width="65px";
+
+        img.style.height="85px";
+
+        img.style.borderRadius="0";
+
+
+
+
+
+        await wait(1300);
+
+
+
+        if(myAnimation !== currentAnimation){
+            return;
+        }
+
+
+
+
+        img.style.opacity="0";
+
+
+
+
+        await wait(500);
+
+
+
+        if(myAnimation !== currentAnimation){
+            return;
+        }
+
+
+
+        img.remove();
+
+
+
+
+
+
+        const player=document.createElement("div");
+
+
+        player.className="player show";
+
+
+        player.style.left =
+            pos[0]+"%";
+
+
+        player.style.top =
+            pos[1]+"%";
+
+
+
+        player.innerHTML=`
+
+            <div class="nr">
+                ${p.nr}
+            </div>
+
+            <div class="name">
+                ${p.name}
+            </div>
+
+        `;
+
+
+
+
+        if(i===0){
+
+            player.classList.add("keeper");
+
+        }
+
+
+
+
+        f.appendChild(player);
+
+
+
+
+        await wait(500);
+
+
+    }
+
+    await showSubs(data);
+
+}
+
+
+async function showSubs(data){
+
+    const field = document.getElementById("field");
+    const subsContainer = document.getElementById("subsContainer");
+
+
+    subsContainer.innerHTML="";
+
+
+    let images=[];
+
+
+    // Create all substitute images
+    data.subs.forEach((sub,i)=>{
+
+
+        const img=document.createElement("div");
+
+        img.className="sub-intro";
+
+
+        img.style.backgroundImage =
+            `url('${sub.image}')`;
+
+
+
+        // Center group on screen
+        const positions = [
+            [0,35],
+            [20,35],
+            [40,35],
+            [60,35],
+            [80,35]
+        ];
+
+
+        img.style.left =
+            positions[i][0]+"%";
+
+        img.style.top =
+            positions[i][1]+"%";
+
+
+
+        field.appendChild(img);
+
+        images.push(img);
+
+
     });
 
-    // Render subs
-    const subsContainer = document.getElementById("subsContainer");
-    subsContainer.innerHTML = ""; // clear previous
-    data.subs.forEach(sub => {
-        const s = document.createElement("div");
-        s.className = "sub";
-        s.innerText = `${sub.nr} ${sub.name}`;
-        subsContainer.appendChild(s);
+
+
+    // Show photos for a while
+    await wait(3000);
+
+
+
+
+    // Move all photos to bench area
+    images.forEach((img,i)=>{
+
+
+        img.style.left="80px";
+
+        img.style.top=
+            (80+i*100)+"px";
+
+
+        img.style.width="55px";
+
+        img.style.height="100px";
+
+
     });
+
+
+
+    await wait(1500);
+
+
+
+    // Fade away
+    images.forEach(img=>{
+
+        img.style.opacity="0";
+
+    });
+
+
+
+    await wait(700);
+
+
+
+    images.forEach(img=>{
+        img.remove();
+    });
+
+
+
+
+    // Finally show substitute names
+    data.subs.forEach((sub,i)=>{
+
+
+        const row=document.createElement("div");
+
+
+        row.className="sub";
+
+
+        row.innerText =
+            `${sub.nr} ${sub.name}`;
+
+
+        row.style.opacity="0";
+
+
+        subsContainer.appendChild(row);
+
+
+
+        setTimeout(()=>{
+
+            row.style.opacity="1";
+
+        },i*200);
+
+
+    });
+
+
+}
+
+
+socket.on("update", data=>{
+
+
+    if(data.screen !== "lineup"){
+        return;
+    }
+
+
+
+    /*
+       Only animate when:
+       - lineup changed
+       - opening lineup screen
+       - pressing opstelling again
+    */
+
+    if(
+        data.lineupVersion !== lastLineupVersion
+    ){
+
+        lastLineupVersion =
+            data.lineupVersion;
+
+
+        showLineup(data);
+
+    }
+
+
 });
 </script>
+
 
 </body>
 </html>
