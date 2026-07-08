@@ -72,9 +72,12 @@
 <div id="lineupInputs"></div>
 
 <h2>Wissels</h2>
+
 <div id="subInputs"></div>
 
-<button onclick="saveLineup()">Opslaan opstelling</button>
+<button onclick="saveLineup()">
+Opslaan opstelling
+</button>
 
 <h2>Scherm</h2>
 <button onclick="showDisplay()">Scorebord</button>
@@ -104,11 +107,11 @@ socket.on("update", data => {
 
     const sel = document.getElementById("scorer");
 
-    let current = sel.value;   // 👈 onthoud keuze
+    let current = sel.value;
 
     sel.innerHTML = "";
 
-    data.lineup.forEach(p => {
+    players.forEach(p => {
 
         const opt = document.createElement("option");
 
@@ -120,6 +123,7 @@ socket.on("update", data => {
         }
 
         sel.appendChild(opt);
+
     });
 
     // Voeg subs toe
@@ -147,53 +151,125 @@ let currentExtra = 0;
 let lineup = [];
 let subs = [];
 
-function makeInputs() {
+let players=[];
 
-    const l = document.getElementById("lineupInputs");
-    const s = document.getElementById("subInputs");
 
-    const positions = ["K","LB","CV","CV","RB","CM","CVM","CM","LB","SP","RB"];
+socket.emit("get_players");
 
-    for (let i=0;i<11;i++) {
+
+socket.on("players", data=>{
+
+    players=data;
+
+    makeInputs();
+
+});
+
+
+
+function makeInputs(){
+
+    const l=document.getElementById("lineupInputs");
+    const s=document.getElementById("subInputs");
+
+
+    const positions=[
+        "GK",
+        "LB",
+        "CV",
+        "CV",
+        "RB",
+        "CM",
+        "CVM",
+        "CM",
+        "LW",
+        "SP",
+        "RW"
+    ];
+
+
+    positions.forEach((pos,i)=>{
+
         l.innerHTML += `
-            <div style="margin-bottom:10px;">
-                <strong>${positions[i]}</strong><br>
-                <input placeholder="Nr" id="nr${i}">
-                <input placeholder="Naam" id="name${i}">
-            </div>
+        <label>${pos}</label>
+        <select id="player${i}">
+        ${playerOptions()}
+        </select>
+        <br><br>
         `;
+
+    });
+
+
+    for(let i=0;i<5;i++){
+
+        s.innerHTML += `
+        <select id="sub${i}">
+        ${playerOptions()}
+        </select>
+        <br>
+        `;
+
     }
 
-    for (let i=0;i<5;i++) {
-        s.innerHTML += `
-            <input placeholder="Nr" id="subnr${i}">
-            <input placeholder="Naam" id="subname${i}">
-        `;
-    }
 }
 
-makeInputs();
+
+
+function playerOptions(){
+
+    return players.map(p=>
+        `<option value="${p.name}">
+        ${p.nr} - ${p.name}
+        </option>`
+    ).join("");
+
+}
+
+
 
 function saveLineup(){
 
-    lineup = [];
-    subs = [];
+    let lineup=[];
+    let subs=[];
 
-    for (let i=0;i<11;i++){
-        lineup.push({
-            nr: document.getElementById("nr"+i).value,
-            name: document.getElementById("name"+i).value
-        });
+
+    for(let i=0;i<11;i++){
+
+        lineup.push(
+            players.find(
+                p=>p.name==
+                document.getElementById(
+                    "player"+i
+                ).value
+            )
+        );
+
     }
 
-    for (let i=0;i<5;i++){
-        subs.push({
-            nr: document.getElementById("subnr"+i).value,
-            name: document.getElementById("subname"+i).value
-        });
+
+    for(let i=0;i<5;i++){
+
+        subs.push(
+            players.find(
+                p=>p.name==
+                document.getElementById(
+                    "sub"+i
+                ).value
+            )
+        );
+
     }
 
-    socket.emit("save_lineup", { lineup, subs });
+
+    socket.emit(
+        "save_lineup",
+        {
+            lineup,
+            subs
+        }
+    );
+
 }
 
 function goalHome(){
