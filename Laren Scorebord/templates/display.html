@@ -15,17 +15,17 @@
 
         .container {
             display: grid;
-            grid-template-rows: 1fr 1.5fr 1fr;
+            grid-template-rows: 1fr 2fr 1.5fr;
             height: 100vh;
             text-align: center;
         }
 
         .timer {
-            font-size: 90px;
+            font-size: 100px;
         }
 
         .extra-time {
-            font-size: 45px;
+            font-size: 70px;
             opacity: 0.7;
             display: none;
         }
@@ -42,8 +42,8 @@
         }
 
         .team img {
-            width: 220px;
-            height: 220px;
+            width: 240px;
+            height: 240px;
             object-fit: contain;
         }
 
@@ -58,17 +58,18 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start; /* scrollers kunnen naar beneden overlappen */
-            padding: 10px 20px;
-            height: 250px; /* vast hoogte zodat de sponsor div niet verschuift */
+            /* padding: 10px 20px;
+            /* height: 250px; /* vast hoogte zodat de sponsor div niet verschuift */
         }
 
         .scorers {
             position: absolute; /* overlay positie */
             top: 0; /* start bovenaan de bottomRow */
             left: 3%; /* links uitlijnen met de home column */
-            width: 280px; /* zelfde breedte als het logo */
+            width: 35%; /* zelfde breedte als het logo */
+            height: 100%;
             color: white;
-            font-size: 30px;
+            font-size: 40px;
             text-align: left;
             overflow: visible; /* mag overlopen naar onder */
             z-index: 1;
@@ -82,10 +83,10 @@
         }
 
         .sponsor img {
-            width: 250px;
-            height: 200px;
+            width: 240px;
+            height: 240px;
             object-fit: contain;
-            background: white;       /* 👈 zichtbaar op zwart */
+            background: black;       /* 👈 zichtbaar op zwart */
             padding: 1px;
             border-radius: 0px;
         }
@@ -119,7 +120,7 @@
             font-size: 240px;
             font-weight: bold;
             color: white;
-            text-shadow: 
+            text-shadow:
                 0 0 20px rgba(255,255,255,0.8),
                 0 0 40px rgba(255,255,255,0.6);
             transform: scale(0.5);
@@ -183,7 +184,7 @@
 
         <div class="timerBlock">
             <div class="timer" id="timer">00:00</div>
-            <div class="extra-time" id="extra">+0</div>
+            <div class="extra-time" id="extra">+00:00</div>
         </div>
 
         <div class="scoreboard">

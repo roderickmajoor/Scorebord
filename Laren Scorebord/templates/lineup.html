@@ -267,6 +267,7 @@ const socket = io();
 
 let currentAnimation = 0;
 let lastLineupVersion = -1;
+let skipAnimation = true;
 
 
 
@@ -291,12 +292,14 @@ const positions = [
 
 
 
-function wait(ms){
+function wait(ms) {
+    if (skipAnimation) {
+        return Promise.resolve();
+    }
 
     return new Promise(resolve =>
         setTimeout(resolve, ms)
     );
-
 }
 
 
@@ -508,7 +511,9 @@ async function showSubs(data){
             [20,35],
             [40,35],
             [60,35],
-            [80,35]
+            [80,35],
+            [100,35],
+            [120,35]
         ];
 
 

@@ -1,5 +1,10 @@
 [
     {
+        "name": "",
+        "nr": "",
+        "image": "/static/players/jos_van_hille.png"
+    },
+    {
         "name": "J. Van Hille",
         "nr": 10,
         "image": "/static/players/jos_van_hille.png"
