@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Wedstrijdintro</title>
+
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+<style>
+
+html, body {
+
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: black;
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+    overflow: hidden;
+
+}
+
+
+#intro {
+
+    width: 100vw;
+    height: 100vh;
+
+}
+
+
+.page {
+
+    position: absolute;
+
+    width: 100vw;
+    height: 100vh;
+
+    display: none;
+
+}
+
+
+.page.active {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+/* =========================
+   POSTER
+========================= */
+
+#poster {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+}
+
+
+/* =========================
+   VOETBALASSIST
+========================= */
+
+#voetbalAssistFrame {
+
+    width: 100%;
+    height: 100%;
+
+    border: none;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div id="intro">
+
+
+    <!-- =========================
+         POSTER
+    ========================= -->
+
+    <div
+        id="posterPage"
+        class="page active"
+    >
+
+        <img
+            id="poster"
+            src=""
+        >
+
+    </div>
+
+
+    <!-- =========================
+         VOETBALASSIST
+    ========================= -->
+
+    <div
+        id="voetbalAssistPage"
+        class="page"
+    >
+
+        <iframe
+            id="voetbalAssistFrame"
+        ></iframe>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+const socket = io();
+
+const voetbalAssistFrame =
+    document.getElementById("voetbalAssistFrame");
+
+const voetbalAssistUrl =
+    "https://voetbalassist.tv/Preview.aspx?k=Laren&c=9";
+
+let currentPage = 0;
+
+let introTimer = null;
+
+let introRunning = false;
+
+let combinedMode = false;
+
+
+/*
+    Intro bestaat uit:
+
+    0 = poster       → 5 seconden
+    1 = VoetbalAssist → 135 seconden
+
+    Totale cyclus = 140 seconden
+*/
+
+
+const pages = [
+
+    document.getElementById("posterPage"),
+
+    document.getElementById("voetbalAssistPage")
+
+];
+
+
+const pageDurations = [
+
+    15000,       // Poster
+
+    135000      // VoetbalAssist
+
+];
+
+
+/* =========================
+   PAGINA TONEN
+========================= */
+
+let voetbalAssistLoaded = false;
+
+function showPage(index) {
+    pages.forEach(page => {
+        page.classList.remove("active");
+    });
+
+    pages[index].classList.add("active");
+    currentPage = index;
+
+    // VoetbalAssist pas laden zodra de pagina daadwerkelijk wordt getoond
+    if (index === 1 && !voetbalAssistLoaded) {
+        voetbalAssistLoaded = true;
+        voetbalAssistFrame.src = voetbalAssistUrl;
+    }
+}
+
+
+/* =========================
+   INTRO STARTEN
+========================= */
+
+function startIntro(combined = false) {
+    clearTimeout(introTimer);
+
+    introRunning = true;
+    combinedMode = combined;
+    currentPage = 0;
+
+    // VoetbalAssist opnieuw laden zodat hij vanaf slide 1 begint
+    voetbalAssistLoaded = false;
+    voetbalAssistFrame.src = "";
+
+    showPage(0);
+    scheduleNextPage();
+}
+
+
+/* =========================
+   VOLGENDE PAGINA
+========================= */
+
+function scheduleNextPage() {
+
+    clearTimeout(introTimer);
+
+
+    if (!introRunning) {
+        return;
+    }
+
+
+    introTimer = setTimeout(() => {
+
+        currentPage++;
+
+
+        /*
+            Einde van de volledige
+            introcyclus
+        */
+
+        if (currentPage >= pages.length) {
+
+
+            /*
+                Bij gecombineerde modus:
+                stop en meld display.html
+                dat de sponsor mag komen.
+            */
+
+            if (combinedMode) {
+
+                introRunning = false;
+
+
+                console.log(
+                    "Wedstrijdintro klaar → sponsor"
+                );
+
+
+                window.parent.postMessage(
+                    {
+                        type: "introFinished"
+                    },
+                    "*"
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+                Alleen wedstrijdintro:
+                opnieuw vanaf poster
+            */
+
+            currentPage = 0;
+
+        }
+
+
+        showPage(currentPage);
+
+        scheduleNextPage();
+
+
+    }, pageDurations[currentPage]);
+
+}
+
+
+/* =========================
+   INTRO STOPPEN
+========================= */
+
+function stopIntro() {
+
+    introRunning = false;
+
+    clearTimeout(introTimer);
+
+}
+
+
+/* =========================
+   SERVER UPDATE
+========================= */
+
+socket.on("update", data => {
+
+
+    /*
+        Poster bijwerken
+    */
+
+    if (data.poster) {
+
+        document.getElementById("poster").src =
+            data.poster;
+
+    }
+
+
+    /*
+        Alleen wedstrijdintro
+    */
+
+    if (data.screen === "match_intro") {
+
+        startIntro(false);
+
+    }
+
+
+    /*
+        Wedstrijdintro + sponsors
+    */
+
+    else if (data.screen === "intro_sponsors") {
+
+        startIntro(true);
+
+    }
+
+
+    /*
+        Ander scherm
+    */
+
+    else {
+
+        stopIntro();
+
+    }
+
+});
+
+
+/* =========================
+   BERICHT VAN DISPLAY.HTML
+========================= */
+
+window.addEventListener("message", event => {
+
+
+    if (!event.data) {
+        return;
+    }
+
+
+    /*
+        Sponsorvideo is afgelopen.
+        Start de intro opnieuw.
+    */
+
+    if (event.data.type === "restartIntro") {
+
+        startIntro(true);
+
+    }
+
+});
+
+</script>
+
+
+</body>
+
+</html>

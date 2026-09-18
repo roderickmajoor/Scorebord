@@ -21,6 +21,7 @@ state = {
     "homeLogo": "/static/laren.png",
     "awayLogo": "",
     "sponsor": "",
+    "poster": "",
 
     "homeName": "SV Laren '99",
     "awayName": "Tegenstander",
@@ -99,6 +100,11 @@ def sponsors():
 
     return render_template("sponsors.html")
 
+@app.route("/wedstrijdintro")
+def wedstrijdintro():
+
+    return render_template("wedstrijdintro.html")
+
 @socketio.on("connect")
 def connect():
 
@@ -108,6 +114,29 @@ def connect():
 def show_sponsors():
 
     state["screen"] = "sponsors"
+
+    emit(
+        "update",
+        state,
+        broadcast=True
+    )
+
+@socketio.on("show_match_intro")
+def show_match_intro():
+
+    state["screen"] = "match_intro"
+
+    emit(
+        "update",
+        state,
+        broadcast=True
+    )
+
+
+@socketio.on("show_intro_sponsors")
+def show_intro_sponsors():
+
+    state["screen"] = "intro_sponsors"
 
     emit(
         "update",

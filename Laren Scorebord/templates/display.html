@@ -63,16 +63,21 @@
         }
 
         .scorers {
-            position: absolute; /* overlay positie */
-            top: 0; /* start bovenaan de bottomRow */
-            left: 3%; /* links uitlijnen met de home column */
-            width: 35%; /* zelfde breedte als het logo */
+            position: absolute;
+            top: 0;
+            left: 3%;
+            width: 35%;
             height: 100%;
             color: white;
             font-size: 40px;
             text-align: left;
-            overflow: visible; /* mag overlopen naar onder */
+            overflow: hidden;
             z-index: 1;
+        }
+
+        #scorersContent {
+            position: relative;
+            transform: translateY(0);
         }
 
         .sponsor {
@@ -204,7 +209,9 @@
         <!-- ⭐ NIEUW -->
         <div class="bottomRow">
 
-            <div id="scorers" class="scorers"></div>
+            <div id="scorers" class="scorers">
+                <div id="scorersContent"></div>
+            </div>
 
             <div class="sponsor">
                 <img id="sponsorImg" src="">
@@ -231,108 +238,569 @@
                display:none;">
 </iframe>
 
+<iframe id="matchIntroFrame"
+        src="/wedstrijdintro"
+        style="position:absolute;
+               left:0;
+               top:0;
+               width:100%;
+               height:100%;
+               border:0;
+               display:none;">
+</iframe>
+
 <script>
 const socket = io();
 let lastHomeScore = 0;
 
+let scorerScrollAnimation = null;
+let scorerScrollTimeout = null;
+
+let lastGoals = "";
+
+let currentScreenMode = "display";
+
+let introCycleTimer = null;
+
+let sponsorEndedHandler = null;
+
+function startIntroSponsors() {
+
+    clearTimeout(introCycleTimer);
+
+    currentScreenMode = "intro_sponsors";
+
+
+    // Intro tonen
+
+    display.style.display = "none";
+    lineup.style.display = "none";
+    sponsors.style.display = "none";
+    matchIntro.style.display = "block";
+
+
+    // De intro duurt 4 × 5 seconden = 20 seconden
+
+    introCycleTimer = setTimeout(() => {
+
+        startSponsorFromIntro();
+
+    }, 20000);
+
+}
+
+function startSponsorFromIntro() {
+
+    if (currentScreenMode !== "intro_sponsors") {
+        return;
+    }
+
+
+    display.style.display = "none";
+    lineup.style.display = "none";
+    matchIntro.style.display = "none";
+    sponsors.style.display = "block";
+
+
+    const video =
+        sponsors.contentWindow.document.getElementById(
+            "sponsorVideo"
+        );
+
+
+    if (!video) {
+        return;
+    }
+
+
+    video.currentTime = 0;
+
+    video.loop = false;
+
+    video.play();
+
+
+    /*
+        Wanneer de video klaar is,
+        gaan we weer naar de intro.
+    */
+
+    sponsorEndedHandler = function() {
+
+        if (currentScreenMode !== "intro_sponsors") {
+            return;
+        }
+
+
+        startIntroSponsors();
+
+    };
+
+
+    video.removeEventListener(
+        "ended",
+        sponsorEndedHandler
+    );
+
+
+    video.addEventListener(
+        "ended",
+        sponsorEndedHandler
+    );
+
+}
+
+function startSponsorsOnly() {
+
+    clearTimeout(introCycleTimer);
+
+    currentScreenMode = "sponsors";
+
+
+    display.style.display = "none";
+    lineup.style.display = "none";
+    matchIntro.style.display = "none";
+    sponsors.style.display = "block";
+
+
+    const video =
+        sponsors.contentWindow.document.getElementById(
+            "sponsorVideo"
+        );
+
+
+    if (!video) {
+        return;
+    }
+
+
+    video.currentTime = 0;
+
+    video.loop = true;
+
+    video.play();
+
+}
+
+
+function startScorerScroll() {
+
+    const container = document.getElementById("scorers");
+    const content = document.getElementById("scorersContent");
+
+    // Eventuele oude animatie stoppen
+    if (scorerScrollAnimation) {
+        cancelAnimationFrame(scorerScrollAnimation);
+        scorerScrollAnimation = null;
+    }
+
+    if (scorerScrollTimeout) {
+        clearTimeout(scorerScrollTimeout);
+        scorerScrollTimeout = null;
+    }
+
+    // Altijd terug naar boven beginnen
+    content.style.transition = "none";
+    content.style.transform = "translateY(0)";
+
+    // Even wachten zodat de browser de nieuwe hoogte heeft berekend
+    requestAnimationFrame(() => {
+
+        const overflow = content.scrollHeight - container.clientHeight;
+
+        // Alles past binnen de container
+        if (overflow <= 0) {
+            return;
+        }
+
+        const scrollSpeed = 20;      // pixels per seconde
+        const pauseTime = 3000;      // 3 seconden
+        const returnSpeed = 40;      // pixels per seconde
+
+        let startTime = null;
+
+        // Eerst 3 seconden wachten
+        scorerScrollTimeout = setTimeout(() => {
+
+            startTime = null;
+
+            function scrollDown(timestamp) {
+
+                if (!startTime) {
+                    startTime = timestamp;
+                }
+
+                const elapsed = (timestamp - startTime) / 1000;
+                const distance = Math.min(elapsed * scrollSpeed, overflow);
+
+                content.style.transform =
+                    `translateY(-${distance}px)`;
+
+                if (distance < overflow) {
+
+                    scorerScrollAnimation =
+                        requestAnimationFrame(scrollDown);
+
+                } else {
+
+                    // Onderaan aangekomen:
+                    // 3 seconden wachten
+                    scorerScrollTimeout = setTimeout(() => {
+
+                        startTime = null;
+
+                        function scrollBack(timestamp) {
+
+                            if (!startTime) {
+                                startTime = timestamp;
+                            }
+
+                            const elapsed =
+                                (timestamp - startTime) / 1000;
+
+                            const distance =
+                                Math.max(
+                                    overflow - elapsed * returnSpeed,
+                                    0
+                                );
+
+                            content.style.transform =
+                                `translateY(-${distance}px)`;
+
+                            if (distance > 0) {
+
+                                scorerScrollAnimation =
+                                    requestAnimationFrame(scrollBack);
+
+                            } else {
+
+                                // Weer bovenaan:
+                                // 3 seconden wachten
+                                scorerScrollTimeout =
+                                    setTimeout(() => {
+
+                                        startScorerScroll();
+
+                                    }, pauseTime);
+                            }
+                        }
+
+                        scorerScrollAnimation =
+                            requestAnimationFrame(scrollBack);
+
+                    }, pauseTime);
+                }
+            }
+
+            scorerScrollAnimation =
+                requestAnimationFrame(scrollDown);
+
+        }, pauseTime);
+    });
+}
+
+const display = document.getElementById("displayScreen");
+const lineup = document.getElementById("lineupFrame");
+const sponsors = document.getElementById("sponsorFrame");
+const matchIntro = document.getElementById("matchIntroFrame");
+
+
+function hideAllScreens() {
+
+    display.style.display = "none";
+    lineup.style.display = "none";
+    sponsors.style.display = "none";
+    matchIntro.style.display = "none";
+
+}
+
+
+function showIntro() {
+
+    hideAllScreens();
+
+    matchIntro.style.display = "block";
+
+}
+
+
+function showSponsor() {
+
+    hideAllScreens();
+
+    sponsors.style.display = "block";
+
+}
+
+
+/* =========================
+   SOCKET UPDATE
+========================= */
+
 socket.on("update", data => {
 
-    const scorers = document.getElementById("scorers");
-    scorers.innerHTML = "";
 
-    let map = {};
+    /* =========================
+       SCORERS
+    ========================= */
 
-    data.goals.forEach(g => {
+    // Maak een unieke versie van de huidige doelpuntenlijst
+    const currentGoals = JSON.stringify(data.goals);
 
-        if(!map[g.player]) map[g.player] = [];
+    // Alleen de scorers opnieuw opbouwen als er iets veranderd is
+    if (currentGoals !== lastGoals) {
 
-        map[g.player].push(g.minute);
-    });
+        lastGoals = currentGoals;
 
-    Object.keys(map).forEach(name => {
+        const scorersContent =
+            document.getElementById("scorersContent");
 
-        let mins = map[name].join("' ") + "'";
+        scorersContent.innerHTML = "";
 
-        scorers.innerHTML += `<div>${mins} ${name}</div>`;
-    });
+        let map = {};
 
-    const display = document.getElementById("displayScreen");
-    const lineup = document.getElementById("lineupFrame");
-    const sponsors = document.getElementById("sponsorFrame");
+        data.goals.forEach(g => {
 
+            if (!map[g.player]) {
+                map[g.player] = [];
+            }
 
-    if(data.screen === "lineup"){
+            map[g.player].push(g.minute);
 
-        display.style.display = "none";
-        lineup.style.display = "block";
-        sponsors.style.display = "none";
+        });
+
+        Object.keys(map).forEach(name => {
+
+            let mins = map[name].join("' ") + "'";
+
+            scorersContent.innerHTML +=
+                `<div>${mins} ${name}</div>`;
+
+        });
+
+        // Alleen opnieuw starten wanneer de doelpuntenlijst verandert
+        startScorerScroll();
 
     }
 
 
-    else if(data.screen === "sponsors"){
+    /* =========================
+       SCHERM WISSELEN
+    ========================= */
 
-        display.style.display = "none";
-        lineup.style.display = "none";
-        sponsors.style.display = "block";
+    if (data.screen === "display") {
 
-    }
+        currentScreenMode = "display";
 
-
-    else{
+        hideAllScreens();
 
         display.style.display = "block";
-        lineup.style.display = "none";
-        sponsors.style.display = "none";
 
     }
 
-    document.getElementById("homeName").innerText = data.homeName;
-    document.getElementById("awayName").innerText = data.awayName;
+
+    else if (data.screen === "lineup") {
+
+        currentScreenMode = "lineup";
+
+        hideAllScreens();
+
+        lineup.style.display = "block";
+
+    }
+
+
+    else if (data.screen === "sponsors") {
+
+        currentScreenMode = "sponsors";
+
+        showSponsor();
+
+        /*
+            Sponsorvideo continu laten loopen
+        */
+
+        sponsors.contentWindow.postMessage(
+            {
+                type: "playSponsorLoop"
+            },
+            "*"
+        );
+
+    }
+
+
+    else if (data.screen === "match_intro") {
+
+        currentScreenMode = "match_intro";
+
+        showIntro();
+
+    }
+
+
+    else if (data.screen === "intro_sponsors") {
+
+        currentScreenMode = "intro_sponsors";
+
+        showIntro();
+
+    }
+
+
+    /* =========================
+       SCOREBOARD DATA
+    ========================= */
+
+    document.getElementById("homeName").innerText =
+        data.homeName;
+
+    document.getElementById("awayName").innerText =
+        data.awayName;
 
     document.getElementById("score").innerText =
         data.home + " - " + data.away;
 
-    document.getElementById("timer").innerText = data.time;
+    document.getElementById("timer").innerText =
+        data.time;
 
-    const extraEl = document.getElementById("extra");
+
+    const extraEl =
+        document.getElementById("extra");
 
     if (data.extra && data.extra !== "00:00") {
+
         extraEl.style.display = "block";
-        extraEl.innerText = "+" + data.extra;
-    } else {
-        extraEl.style.display = "none";
+
+        extraEl.innerText =
+            "+" + data.extra;
+
     }
+    else {
+
+        extraEl.style.display = "none";
+
+    }
+
 
     if (data.homeLogo) {
-        document.getElementById("homeLogo").src = data.homeLogo;
+
+        document.getElementById("homeLogo").src =
+            data.homeLogo;
+
     }
+
 
     if (data.awayLogo) {
-        document.getElementById("awayLogo").src = data.awayLogo;
+
+        document.getElementById("awayLogo").src =
+            data.awayLogo;
+
     }
+
 
     if (data.sponsor) {
-        document.getElementById("sponsorImg").src = data.sponsor;
+
+        document.getElementById("sponsorImg").src =
+            data.sponsor;
+
     }
 
-    /* 🔥 Flash bij goal thuis */
-    /* 🔥 Broadcast style goal animation */
+
+    /* =========================
+       GOAL FLASH
+    ========================= */
+
     if (data.home > lastHomeScore) {
-        const el = document.getElementById("main");
-        const goal = document.getElementById("goalOverlay");
+
+        const el =
+            document.getElementById("main");
+
+        const goal =
+            document.getElementById("goalOverlay");
 
         el.classList.add("flash");
+
         goal.classList.add("goal-show");
 
+
         setTimeout(() => {
+
             el.classList.remove("flash");
+
             goal.classList.remove("goal-show");
+
         }, 5000);
+
     }
 
     lastHomeScore = data.home;
+
 });
+
+
+/* =========================
+   COMMUNICATIE MET IFRAMES
+========================= */
+
+window.addEventListener("message", event => {
+
+    if (!event.data) {
+        return;
+    }
+
+
+    /* =========================
+       INTRO KLAAR
+    ========================= */
+
+    if (
+        event.data.type === "introFinished" &&
+        currentScreenMode === "intro_sponsors"
+    ) {
+
+        console.log("INTRO KLAAR → SPONSOR");
+
+
+        showSponsor();
+
+
+        sponsors.contentWindow.postMessage(
+            {
+                type: "playSponsor"
+            },
+            "*"
+        );
+
+    }
+
+
+    /* =========================
+       SPONSOR KLAAR
+    ========================= */
+
+    if (
+        event.data.type === "sponsorFinished" &&
+        currentScreenMode === "intro_sponsors"
+    ) {
+
+        console.log("SPONSOR KLAAR → INTRO");
+
+
+        showIntro();
+
+
+        matchIntro.contentWindow.postMessage(
+            {
+                type: "restartIntro"
+            },
+            "*"
+        );
+
+    }
+
+});
+
 </script>
 
 </body>

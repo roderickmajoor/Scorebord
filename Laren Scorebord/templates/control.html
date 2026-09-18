@@ -67,6 +67,11 @@
 <h2>Sponsor</h2>
 <input type="file" onchange="upload(event, 'sponsor')">
 
+<h2>Wedstrijdposter</h2>
+<input type="file"
+       accept="image/*"
+       onchange="upload(event, 'poster')">
+
 <h2>Opstelling</h2>
 
 <div id="lineupInputs"></div>
@@ -80,9 +85,26 @@ Opslaan opstelling
 </button>
 
 <h2>Scherm</h2>
-<button onclick="showDisplay()">Scorebord</button>
-<button onclick="showLineup()">Opstelling</button>
-<button onclick="showSponsors()">Sponsors</button>
+
+<button onclick="showDisplay()">
+    Scorebord
+</button>
+
+<button onclick="showLineup()">
+    Opstelling
+</button>
+
+<button onclick="showMatchIntro()">
+    Alleen wedstrijdintro
+</button>
+
+<button onclick="showSponsors()">
+    Alleen sponsors
+</button>
+
+<button onclick="showIntroSponsors()">
+    Wedstrijdintro + sponsors
+</button>
 
 <script>
 const socket = io({
@@ -102,6 +124,7 @@ socket.on("update", data => {
     homeLogo = data.homeLogo;
     awayLogo = data.awayLogo;
     sponsor = data.sponsor;
+    poster = data.poster;
 
     currentTime = data.time;
     currentExtra = data.extra;
@@ -145,6 +168,7 @@ let awayName = "Tegenstander";
 let homeLogo = "";
 let awayLogo = "";
 let sponsor = "";
+let poster = "";
 
 let currentTime = "00:00";
 let currentExtra = 0;
@@ -296,7 +320,8 @@ function send(extra = currentExtra, time = currentTime) {
         extra: currentExtra,
         homeLogo, awayLogo,
         homeName, awayName,
-        sponsor
+        sponsor,
+        poster
     });
 }
 
@@ -314,21 +339,53 @@ function showSponsors(){
 
 }
 
+function showMatchIntro(){
+
+    socket.emit("show_match_intro");
+
+}
+
+
+function showIntroSponsors(){
+
+    socket.emit("show_intro_sponsors");
+
+}
+
 function resetMatch(){
     socket.emit("reset_match");
 }
 
 function upload(event, type) {
+
+    const file = event.target.files[0];
+
+    if (!file) return;
+
     const reader = new FileReader();
 
     reader.onload = function() {
-        if (type === "home") homeLogo = reader.result;
-        if (type === "away") awayLogo = reader.result;
-        if (type === "sponsor") sponsor = reader.result;
+
+        if (type === "home") {
+            homeLogo = reader.result;
+        }
+
+        if (type === "away") {
+            awayLogo = reader.result;
+        }
+
+        if (type === "sponsor") {
+            sponsor = reader.result;
+        }
+
+        if (type === "poster") {
+            poster = reader.result;
+        }
+
         send();
     };
 
-    reader.readAsDataURL(event.target.files[0]);
+    reader.readAsDataURL(file);
 }
 
 function startFirst() {
